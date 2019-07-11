@@ -1,0 +1,71 @@
+service: url-crawler
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: ${opt:stage,'dev'}
+  region: ${opt:region, 'eu-west-1'}
+  logRetentionInDays: 14
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource:
+        - "arn:aws:s3:::${self:custom.s3.bucket}/*"
+
+plugins:
+  - serverless-python-requirements
+  - serverless-pseudo-parameters
+  - serverless-step-functions
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+  s3:
+    bucket: url-crawler-#{AWS::AccountId}
+
+package:
+  exclude:
+    - venv/**
+    - __pycache__/*
+    - .gitignore
+
+resources:
+  Resources:
+    UploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3.bucket}
+        AccessControl: Private
+
+functions:
+  startCrawl:
+    handler: startCrawl.startCrawl
+    environment:
+      BUCKET_NAME: ${self:custom.s3.bucket}
+  crawl:
+    handler: crawl.crawl
+    environment:
+      BUCKET_NAME: ${self:custom.s3.bucket}
+    timeout: 900
+
+
+stepFunctions:
+  stateMachines:
+    startCrawl:
+      events:
+        - http:
+            path: startCrawl
+            method: post
+      definition:
+        Comment: "Start carwling at defined URL"
+        StartAt: startCrawl
+        States:
+          startCrawl:
+            Type: Task
+            Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-startCrawl"
+            Next: crawl
+          crawl:
+            Type: Task
+            Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-crawl"
+            End: true
