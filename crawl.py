@@ -47,8 +47,8 @@ def crawl(event, context):
         for item in event:
             if 'spiderConfig' in item:
                 indexNo = event.index(item)
-                spiderConfig = event[indexNo]["spiderConfig"]
-                print(f"Using payload: {spiderConfig}")
+        spiderConfig = event[indexNo]["spiderConfig"]
+        print(f"Using payload: {spiderConfig}")
 
         start_url = spiderConfig["url"]
         domain = urlparse(spiderConfig["url"]).netloc
@@ -95,6 +95,7 @@ def crawl(event, context):
         print('All done.')
     except Exception as e:
         print(e)
+        raise
 
 if __name__ == "__main__":
     crawl('', '')
