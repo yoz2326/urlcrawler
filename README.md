@@ -44,40 +44,35 @@ endpoints:
 Use the URL provided and post a payload similar to the ones below.
 Simple payload:
 ```
-[ 
+{
+"spiderConfig" :
   {
-  "spiderConfig" :
-    {
-      "url": "http://books.toscrape.com"
-    }
+    "url": "http://books.toscrape.com"
   }
-]
+}
 ```
 More complex example:
 ```
-[ 
+{
+"spiderConfig" :
   {
-  "spiderConfig" :
-    {
-      "url": "http://books.toscrape.com",
-      "dry_run": "no",
-      "scrapy_settings": {
-        "LOG_LEVEL": "DEBUG",
-        "FEED_URI": "/tmp/results.json",
-        "CONCURRENT_ITEMS": "400",
-        "CONCURRENT_REQUESTS": "64",
-        "CONCURRENT_REQUESTS_PER_DOMAIN": "32",
-        "CONCURRENT_REQUESTS_PER_IP": "0",
-        "DNSCACHE_ENABLED": "True"
-      }
+    "url": "http://books.toscrape.com",
+    "dry_run": "no",
+    "scrapy_settings": {
+      "LOG_LEVEL": "ERROR",
+      "CONCURRENT_ITEMS": "400",
+      "CONCURRENT_REQUESTS": "64",
+      "CONCURRENT_REQUESTS_PER_DOMAIN": "32",
+      "CONCURRENT_REQUESTS_PER_IP": "0",
+      "DNSCACHE_ENABLED": "True"
     }
-  },
-  "Crawler started. Result will be uploaded to s3://url-crawler-account-id"
-]
+  }
+}
 ```
   - Required: `url` to be used as a starting point.
   - Optional: `dry_run` tell the spider to start crawling. Values: `yes` or `no` (defaults to `no` if not set).
   - Optional: `scrapy_settings` can be used to set spider settings. For list of possible settings see [Built-in settings reference](https://docs.scrapy.org/en/latest/topics/settings.html?highlight=settings#built-in-settings-reference).
+  - Optional: `spiderConfig.scrapy_settings.FEED_URI` : can override the S3 bucket to upload the results to. Defaults to `s3://url-crawler-#{AWS::AccountId}` (can use `/tmp/results.json` if testing locally).
  
 The results will be uploaded to an S3 bucket named `url-crawler-#{AWS::AccountId}`.
 
@@ -85,9 +80,9 @@ The results will be uploaded to an S3 bucket named `url-crawler-#{AWS::AccountId
 ## Running it locally
 
 To run it locally you'll have to:
-        - `virtualenv venv --python=python3`
-        - `pip install Scrapy`
-`sls invoke local -f crawl -p payload.json`
+        - `virtualenv venv --python=python3`  
+        - `pip install Scrapy`  
+        - `sls invoke local -f crawl -p payload.json`  
 There is a `payload.json` file to be used as an example; adjust as you see fit.
 Results will be sent to `FEED_URI` as set in `payload.json`.
 
