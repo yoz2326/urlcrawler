@@ -79,7 +79,7 @@ The results will be uploaded to an S3 bucket named `url-crawler-#{AWS::AccountId
 
 ## Running it locally
 
-To run it locally you'll have to:
+To run it locally you'll have to:  
         - `virtualenv venv --python=python3`  
         - `pip install Scrapy`  
         - `sls invoke local -f crawl -p payload.json`  
